@@ -39,7 +39,37 @@ HC = 12398.42          # hc in eV·Å
 N_A = 6.02214076e23   # Avogadro's number, mol⁻¹
 
 
-# Atomic masses (g/mol) for elements used in our materials
+def _get_atomic_mass(element: str) -> float:
+    """
+    Return atomic mass (g/mol) for the given element symbol.
+
+    Uses the ``periodictable`` package when available, otherwise falls back
+    to the built-in table for elements used in the predefined materials.
+    """
+    try:
+        import periodictable as _pt   # type: ignore
+        return getattr(_pt, element).mass
+    except Exception:
+        pass
+    # Minimal fallback table (used only if periodictable is not installed)
+    _FALLBACK = {
+        "H": 1.008, "He": 4.003, "Li": 6.941, "Be": 9.012, "B": 10.811,
+        "C": 12.011, "N": 14.007, "O": 15.999, "F": 18.998, "Ne": 20.180,
+        "Na": 22.990, "Mg": 24.305, "Al": 26.982, "Si": 28.085, "P": 30.974,
+        "S": 32.060, "Cl": 35.450, "Ar": 39.948, "K": 39.098, "Ca": 40.078,
+        "Au": 196.967,
+    }
+    if element not in _FALLBACK:
+        raise KeyError(
+            f"Atomic mass for '{element}' not found. "
+            "Install the 'periodictable' package: pip install periodictable"
+        )
+    return _FALLBACK[element]
+
+
+# ---------------------------------------------------------------------------
+# Legacy dict kept for backward compatibility; new code uses _get_atomic_mass
+# ---------------------------------------------------------------------------
 ATOMIC_MASS = {
     "H":  1.008,
     "C": 12.011,
@@ -98,7 +128,7 @@ def atomic_number_density(formula: dict, density_g_cm3: float) -> float:
     float
         Number density of formula units (molecules/cm³).
     """
-    molar_mass = sum(ATOMIC_MASS[el] * n for el, n in formula.items())
+    molar_mass = sum(_get_atomic_mass(el) * n for el, n in formula.items())
     return (density_g_cm3 * N_A) / molar_mass
 
 
@@ -131,7 +161,7 @@ def compute_elf_element(element: str, density_g_cm3: float,
         Imaginary part of dielectric function.
     """
     formula = {element: 1}
-    molar_mass = ATOMIC_MASS[element]
+    molar_mass = _get_atomic_mass(element)
     n_mol = (density_g_cm3 * N_A) / molar_mass   # atoms/cm³
 
     E_raw, f1_raw, f2_raw = load_henke(element, e_min=e_min)
