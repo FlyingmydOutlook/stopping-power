@@ -17,6 +17,8 @@ import os
 import sys
 import time
 import numpy as np
+import matplotlib
+matplotlib.use("Agg")   # set non-interactive backend before any other matplotlib import
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -89,8 +91,6 @@ print("Step 4: Generating plots")
 print("=" * 60)
 
 import matplotlib
-matplotlib.use("Agg")   # non-interactive backend for headless environments
-
 from plot_results import plot_stopping_power, plot_imfp, plot_elf
 
 plot_stopping_power(all_results, out_dir=RESULTS_DIR)

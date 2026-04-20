@@ -41,7 +41,7 @@ from scipy.interpolate import interp1d
 from scipy.integrate import trapezoid
 
 # Physical constants
-A0_NM = 0.0529177210903   # Bohr radius in nm
+A0_NM = 0.0529177   # Bohr radius in nm (a₀)
 ME_C2 = 510998.95          # electron rest-mass energy in eV
 
 
@@ -95,15 +95,12 @@ def dimfp(K: float, omega: np.ndarray, elf_interp) -> np.ndarray:
     """
     Differential inverse mean free path d(1/λ)/dω [nm⁻¹/eV] at energy K.
 
-    Uses the non-relativistic Ashley formula (eq. 20, Ashley 1988):
+    Implements the non-relativistic Ashley formula (eq. 20, Ashley 1988):
 
         d(1/λ)/dω = ELF(ω) · L(K,ω) / (2π a₀ K)
 
-    A mild relativistic correction is folded in by replacing the bare kinetic
-    energy K with the relativistically-corrected kinetic energy
-    K_rel = K · β² · m_e c² / (2K) = (m_e c²/2) · β² evaluated consistently:
-    for K ≪ m_e c², K_rel → K; for K → ∞, K_rel saturates.  In practice
-    the correction is < 5 % below 30 keV, so the bare K is used directly.
+    The relativistic correction to this formula is < 5 % below 30 keV, so
+    the bare kinetic energy K is used directly.
 
     Parameters
     ----------
